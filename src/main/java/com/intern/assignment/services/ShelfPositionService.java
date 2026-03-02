@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -38,5 +39,12 @@ public class ShelfPositionService {
     public Boolean deleteShelf(String shelfPositionId) {
         logger.info("Shelf Position Service: Shelf Position delete requested and accepted for shelf position id: {}", shelfPositionId);
         return shelfPositionRepository.deleteShelfPosition(shelfPositionId);
+    }
+
+    public List<ShelfPosition> addShelfPositions(String deviceId, int numberOfShelfPositions) {
+        logger.info("Shelf Position Service: Shelf positions added for device ID: {}", deviceId);
+        List<ShelfPosition> result = new ArrayList<>();
+        for(int i=0;i<numberOfShelfPositions;i++) result.add(shelfPositionRepository.addShelfPositions(deviceId));
+        return result;
     }
 }

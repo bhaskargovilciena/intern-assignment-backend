@@ -118,4 +118,34 @@ public class ShelfPositionRepository {
         driver.executableQuery(query).withParameters(Map.of("id", shelfPositionId)).execute().records();
         return true;
     }
+
+    public ShelfPosition addShelfPositions(String deviceId) {
+        String query = """
+                MATCH (device:Device) WHERE elementId(device) = $id AND device.isDeleted = false
+                SET device.numberOfShelfPositions = device.numberOfShelfPositions + 1
+                CREATE (shelfPosition:ShelfPosition {
+                    deviceId: $id,
+                    isDeleted: false
+                })
+                MERGE (device)-[:HAS]->(shelfPosition)
+                RETURN collect(shelfPosition) AS shelfPositions
+                """;
+        var records = driver.executableQuery(query).withParameters(Map.of(
+                "id", deviceId
+        )).execute().records();
+
+        logger.info("Shelf Position Repository: 1 Shelf Positions added for {}", deviceId);
+
+        return records
+                .stream()
+                .flatMap(record -> record.get("shelfPositions").asList(Value::asNode).stream())
+                .map(node -> {
+                    ShelfPosition shelfPosition = new ShelfPosition();
+                    shelfPosition.setId(node.elementId());
+                    shelfPosition.setDeviceId(node.get("deviceId").asString());
+                    shelfPosition.setIsDeleted(node.get("isDeleted").asBoolean());
+                    return shelfPosition;
+                })
+                .toList().getFirst();
+    }
 }
