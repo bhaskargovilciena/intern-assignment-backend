@@ -95,7 +95,6 @@ public class ShelfPositionRepository {
                 MATCH (device:Device)-[r:HAS]->(shelfPosition:ShelfPosition)
                 WHERE elementId(device) = $id
                 SET shelfPosition.isDeleted = true
-                DELETE r
                 RETURN shelfPosition
                 """;
 
@@ -105,5 +104,16 @@ public class ShelfPositionRepository {
             Node node = record.get("shelfPosition").asNode();
             shelfService.deleteAllShelves(node.elementId());
         });
+    }
+
+    public Boolean deleteShelfPosition(String shelfPositionId) {
+        String query = """
+                MATCH (device:Device)-[:HAS]-(shelfPosition:ShelfPosition)-[r:HAS]-(shelf:Shelf) WHERE elementId(shelfPosition) = $id
+                SET shelfPosition.isDeleted = true
+                SET device.numberOfShelfPositions = device.numberOfShelfPositions - 1
+                SET shelf.isDeleted = true
+                """;
+        driver.executableQuery(query).withParameters(Map.of("id", shelfPositionId)).execute().records();
+        return true;
     }
 }

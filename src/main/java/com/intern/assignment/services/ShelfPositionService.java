@@ -34,4 +34,9 @@ public class ShelfPositionService {
         logger.info("Shelf Position Service: Shelf Position delete requested and accepted for device ID: {}", deviceId);
         shelfPositionRepository.deleteAllShelfPositions(deviceId);
     }
+
+    public Boolean deleteShelf(String shelfPositionId) {
+        logger.info("Shelf Position Service: Shelf Position delete requested and accepted for shelf position id: {}", shelfPositionId);
+        return shelfPositionRepository.deleteShelfPosition(shelfPositionId);
+    }
 }
