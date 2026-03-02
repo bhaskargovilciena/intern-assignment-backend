@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -78,10 +79,10 @@ public class ShelfPositionRepository {
                     shelfPosition.setId(node.elementId());
                     shelfPosition.setIsDeleted(node.get("isDeleted").asBoolean());
                     Shelf shelf = shelfService.getShelf(shelfPosition.getId());
-                    shelfPositions.add(Map.of(
-                            "shelfPosition", shelfPosition
-                    ));
-                    if(shelf != null) shelfPositions.getLast().put("shelf", shelf);
+                    Map<String,Object> map = new HashMap<>();
+                    map.put("shelfPosition", shelfPosition);
+                    if(shelf != null) map.put("shelf", shelf);
+                    shelfPositions.add(map);
                 });
 
         logger.info("Shelf Position Repository: Shelf Position read requested for device ID: {}", deviceId);
@@ -89,11 +90,12 @@ public class ShelfPositionRepository {
         return shelfPositions;
     }
 
-    public void deleteShelfPosition(String deviceId) {
+    public void deleteAllShelfPositions(String deviceId) {
         String query = """
-                MATCH (device:Device)-[:HAS]->(shelfPosition:ShelfPosition)
-                WHERE elementId(device) = $id AND device.isDeleted = true
+                MATCH (device:Device)-[r:HAS]->(shelfPosition:ShelfPosition)
+                WHERE elementId(device) = $id
                 SET shelfPosition.isDeleted = true
+                DELETE r
                 RETURN shelfPosition
                 """;
 
@@ -101,7 +103,7 @@ public class ShelfPositionRepository {
 
         records.forEach(record -> {
             Node node = record.get("shelfPosition").asNode();
-            shelfService.deleteShelf(node.elementId());
+            shelfService.deleteAllShelves(node.elementId());
         });
     }
 }

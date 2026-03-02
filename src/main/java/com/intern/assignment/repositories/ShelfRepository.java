@@ -91,13 +91,25 @@ public class ShelfRepository {
         return shelf;
     }
 
-    public void deleteShelf(String shelfPositionId) {
+    public void deleteAllShelves(String shelfPositionId) {
         String query = """
-                MATCH (shelfPosition:ShelfPosition)-[:HAS]->(shelf:Shelf)
-                WHERE elementId(shelfPosition) = $id AND shelfPosition.isDeleted = true
+                MATCH (shelfPosition:ShelfPosition)-[r:HAS]->(shelf:Shelf)
+                WHERE elementId(shelfPosition) = $id
                 SET shelf.isDeleted = true
+                DELETE r
                 """;
 
         driver.executableQuery(query).withParameters(Map.of("id", shelfPositionId)).execute();
+    }
+
+    public Boolean deleteShelf(String shelfId) {
+        String query = """
+                MATCH (:ShelfPosition)-[r:HAS]->(shelf:Shelf) WHERE elementId(shelf) = $shelfId
+                SET shelf.isDeleted = true
+                DELETE r
+                """;
+        driver.executableQuery(query).withParameters(Map.of("shelfId", shelfId)).execute().records();
+
+        return true;
     }
 }

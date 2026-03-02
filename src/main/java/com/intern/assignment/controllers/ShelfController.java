@@ -45,4 +45,11 @@ public class ShelfController {
         logger.info("Shelf Controller: Shelf update requested");
         return new ResponseEntity<>(shelfService.updateShelf(shelfId, name, partNumber), HttpStatus.OK);
     }
+
+    @DeleteMapping("/delete")
+    @CrossOrigin(origins = "http://localhost:4000")
+    public ResponseEntity<Boolean> deleteShelf(@RequestParam(value = "shelfId") String shelfId) {
+        logger.info("Shelf Controller: Shelf deletion requested for ID: {}", shelfId);
+        return new ResponseEntity<>(shelfService.deleteShelf(shelfId),HttpStatus.OK);
+    }
 }

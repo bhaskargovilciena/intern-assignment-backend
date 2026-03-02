@@ -32,8 +32,13 @@ public class ShelfService {
         return shelfRepository.updateShelf(shelfId, name, partNumber);
     }
 
-    public void deleteShelf(String shelfPositionId) {
+    public void deleteAllShelves(String shelfPositionId) {
         logger.info("Shelf Service: Shelf deletion requested and forwarded to repository");
-        shelfRepository.deleteShelf(shelfPositionId);
+        shelfRepository.deleteAllShelves(shelfPositionId);
+    }
+
+    public Boolean deleteShelf(String shelfId) {
+        logger.info("Shelf Service: Shelf deletion requested and forwarded to repository for ID: {}", shelfId);
+        return shelfRepository.deleteShelf(shelfId);
     }
 }

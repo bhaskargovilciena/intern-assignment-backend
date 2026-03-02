@@ -175,7 +175,7 @@ public class DeviceRepository {
 
         records.forEach(record -> {
             Node node = record.get("device").asNode();
-            shelfPositionService.deleteShelfPosition(node.elementId());
+            shelfPositionService.deleteAllShelfPositions(node.elementId());
         });
 
         return true;
