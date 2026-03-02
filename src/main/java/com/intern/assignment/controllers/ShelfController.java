@@ -47,7 +47,7 @@ public class ShelfController {
     }
 
     @DeleteMapping("/delete")
-    @CrossOrigin(origins = "http://localhost:4000")
+    @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<Boolean> deleteShelf(@RequestParam(value = "shelfId") String shelfId) {
         logger.info("Shelf Controller: Shelf deletion requested for ID: {}", shelfId);
         return new ResponseEntity<>(shelfService.deleteShelf(shelfId),HttpStatus.OK);
