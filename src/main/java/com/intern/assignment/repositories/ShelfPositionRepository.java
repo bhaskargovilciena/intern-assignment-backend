@@ -108,10 +108,12 @@ public class ShelfPositionRepository {
 
     public Boolean deleteShelfPosition(String shelfPositionId) {
         String query = """
-                MATCH (device:Device)-[:HAS]-(shelfPosition:ShelfPosition)-[r:HAS]-(shelf:Shelf) WHERE elementId(shelfPosition) = $id
+                MATCH (device:Device)-[:HAS]-(shelfPosition:ShelfPosition) WHERE elementId(shelfPosition) = $id
                 SET shelfPosition.isDeleted = true
                 SET device.numberOfShelfPositions = device.numberOfShelfPositions - 1
-                SET shelf.isDeleted = true
+                WITH shelfPosition
+                OPTIONAL MATCH (shelfPosition)-[:HAS]-(shelf:Shelf) SET shelf.isDeleted = true
+                RETURN shelfPosition
                 """;
         driver.executableQuery(query).withParameters(Map.of("id", shelfPositionId)).execute().records();
         return true;
