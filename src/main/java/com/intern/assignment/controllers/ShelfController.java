@@ -1,6 +1,9 @@
 package com.intern.assignment.controllers;
 
 import com.intern.assignment.entities.Shelf;
+import com.intern.assignment.exceptions.ShelfCannotBeCreatedException;
+import com.intern.assignment.exceptions.ShelfNotFoundException;
+import com.intern.assignment.exceptions.ShelfPositionNotFoundException;
 import com.intern.assignment.services.ShelfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,14 +26,14 @@ public class ShelfController {
 
     @PostMapping("/create")
     @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<Shelf> createShelf(@RequestParam(value = "shelfPositionId") String shelfPositionId, @RequestBody Shelf shelf) {
+    public ResponseEntity<Shelf> createShelf(@RequestParam(value = "shelfPositionId") String shelfPositionId, @RequestBody Shelf shelf) throws ShelfCannotBeCreatedException {
         logger.info("Shelf Controller: Shelf creation requested");
         return new ResponseEntity<>(shelfService.createShelf(shelfPositionId, shelf), HttpStatus.OK);
     }
 
     @GetMapping("/get")
     @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<Shelf> getShelf(@RequestParam (value = "shelfPositionId") String shelfPositionId) {
+    public ResponseEntity<Shelf> getShelf(@RequestParam (value = "shelfPositionId") String shelfPositionId) throws ShelfPositionNotFoundException {
         logger.info("Shelf Controller: Shelf read requested");
         return new ResponseEntity<>(shelfService.getShelf(shelfPositionId), HttpStatus.OK);
     }
@@ -41,14 +44,14 @@ public class ShelfController {
             @RequestParam(value = "shelfId") String shelfId,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "partNumber", required = false) String partNumber
-    ) {
+    ) throws ShelfNotFoundException {
         logger.info("Shelf Controller: Shelf update requested");
         return new ResponseEntity<>(shelfService.updateShelf(shelfId, name, partNumber), HttpStatus.OK);
     }
 
     @DeleteMapping("/delete")
     @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<Boolean> deleteShelf(@RequestParam(value = "shelfId") String shelfId) {
+    public ResponseEntity<Boolean> deleteShelf(@RequestParam(value = "shelfId") String shelfId) throws ShelfNotFoundException {
         logger.info("Shelf Controller: Shelf deletion requested for ID: {}", shelfId);
         return new ResponseEntity<>(shelfService.deleteShelf(shelfId),HttpStatus.OK);
     }

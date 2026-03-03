@@ -2,6 +2,9 @@ package com.intern.assignment.repositories;
 
 import com.intern.assignment.config.DatabaseConnection;
 import com.intern.assignment.entities.Device;
+import com.intern.assignment.entities.ShelfPosition;
+import com.intern.assignment.exceptions.DeviceNotFoundException;
+import com.intern.assignment.exceptions.ShelfPositionCannotBeCreatedException;
 import com.intern.assignment.services.ShelfPositionService;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Record;
@@ -57,17 +60,22 @@ public class DeviceRepository {
         device.setIsDeleted(record.get("isDeleted").asBoolean()); // setting the isDeleted property from the device
         Map<String,Object> result = new HashMap<>();
         result.put("device", device);
-        result.put("shelfPositions", shelfPositionService.createShelfPositions(device.getId(), device.getNumberOfShelfPositions()));
-
+        List<ShelfPosition> shelfPositions;
+        try {
+            shelfPositions = shelfPositionService.createShelfPositions(device.getId(), device.getNumberOfShelfPositions());
+            result.put("shelfPositions", shelfPositions);
+        } catch (ShelfPositionCannotBeCreatedException e) {
+            throw new RuntimeException(e);
+        }
         return result;
     }
 
-    public List<Map<String,Object>> searchDevices(String id, String buildingName, String deviceName, String partNumber, String deviceType, int numberOfShelfPositions) {
+    public List<Map<String,Object>> searchDevices(String id, String buildingName, String deviceName, String partNumber, String deviceType, int numberOfShelfPositions) throws DeviceNotFoundException {
         String query = "MATCH (device:Device) WHERE device.isDeleted=false ";
         Map<String, Object> params = new HashMap<>();
 
         if(id != null) {
-            query += "AND elementId(device) = $id";
+            query += "AND elementId(device) = $id ";
             params.put("id", id);
         }
         if(buildingName != null) {
@@ -105,7 +113,12 @@ public class DeviceRepository {
             device.setNumberOfShelfPositions(node.get("numberOfShelfPositions").asInt());
             device.setId(node.elementId());
             device.setIsDeleted(node.get("isDeleted").asBoolean());
-            List<Map<String,Object>> shelfPositions = shelfPositionService.getShelfPositions(device.getId());
+            List<Map<String,Object>> shelfPositions;
+            try {
+                shelfPositions = shelfPositionService.getShelfPositions(device.getId());
+            } catch (DeviceNotFoundException e) {
+                throw new RuntimeException(e);
+            }
             devices.add(Map.of(
               "device", device,
               "shelfPositions", shelfPositions
@@ -113,10 +126,17 @@ public class DeviceRepository {
         });
         logger.info("Device Repository: Search devices function accessed with query: {}", query);
 
+        if(devices.isEmpty()) throw new DeviceNotFoundException("no devices found");
+
         return devices;
     }
 
-    public Device updateDevice(String id, String buildingName, String deviceName, String partNumber, String deviceType, int numberOfShelfPositions) {
+    public void getDeviceById(String deviceId) throws DeviceNotFoundException {
+        searchDevices(deviceId, null, null, null, null, 0);
+    }
+
+    public Device updateDevice(String id, String buildingName, String deviceName, String partNumber, String deviceType, int numberOfShelfPositions) throws DeviceNotFoundException {
+        getDeviceById(id);
         StringBuilder queryBuilder = new StringBuilder("MATCH (device:Device) WHERE elementId(device) = $id AND device.isDeleted=false SET ");
         Map<String, Object> params = new HashMap<>();
         params.put("id", id);
@@ -136,11 +156,6 @@ public class DeviceRepository {
         if(deviceType != null) {
             queryBuilder.append("device.deviceType = $deviceType, ");
             params.put("deviceType", deviceType);
-        }
-        if(numberOfShelfPositions != 0) {
-            queryBuilder.append("device.numberOfShelfPositions = $numberOfShelfPositions, ");
-            params.put("numberOfShelfPositions", numberOfShelfPositions);
-            shelfPositionService.createShelfPositions(id, numberOfShelfPositions);
         }
 
         queryBuilder.setLength(queryBuilder.length() - 2);
@@ -165,7 +180,8 @@ public class DeviceRepository {
         return device;
     }
 
-    public boolean deleteDevice(String deviceId) {
+    public boolean deleteDevice(String deviceId) throws DeviceNotFoundException {
+        getDeviceById(deviceId);
         String query = """
                 MATCH (device:Device) WHERE elementId(device) = $id
                 SET device.isDeleted = true
@@ -175,7 +191,11 @@ public class DeviceRepository {
 
         records.forEach(record -> {
             Node node = record.get("device").asNode();
-            shelfPositionService.deleteAllShelfPositions(node.elementId());
+            try {
+                shelfPositionService.deleteAllShelfPositions(node.elementId());
+            } catch (DeviceNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         });
 
         return true;
