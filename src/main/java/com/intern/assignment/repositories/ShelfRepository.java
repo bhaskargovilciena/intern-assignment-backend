@@ -115,6 +115,7 @@ public class ShelfRepository {
     }
 
     public Boolean deleteShelf(String shelfId) throws ShelfNotFoundException {
+        getShelfById(shelfId);
         String query = """
                 MATCH (:ShelfPosition)-[r:HAS]->(shelf:Shelf) WHERE elementId(shelf) = $shelfId
                 SET shelf.isDeleted = true
