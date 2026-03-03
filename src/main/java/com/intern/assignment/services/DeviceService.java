@@ -1,6 +1,7 @@
 package com.intern.assignment.services;
 
 import com.intern.assignment.entities.Device;
+import com.intern.assignment.exceptions.DeviceCannotBeCreatedException;
 import com.intern.assignment.exceptions.DeviceNotFoundException;
 import com.intern.assignment.repositories.DeviceRepository;
 import org.slf4j.Logger;
@@ -18,7 +19,12 @@ public class DeviceService {
     @Autowired
     public DeviceService(DeviceRepository deviceRepository) { this.deviceRepository = deviceRepository; }
 
-    public Map<String,Object> createDevice(Device device) {
+    public Map<String,Object> createDevice(Device device) throws DeviceCannotBeCreatedException {
+        if(device.getDeviceName().isBlank()) throw new DeviceCannotBeCreatedException("please give device name");
+        if(device.getDeviceType().isBlank()) throw new DeviceCannotBeCreatedException("please give device type");
+        if(device.getBuildingName().isBlank()) throw new DeviceCannotBeCreatedException("please give building name");
+        if(device.getNumberOfShelfPositions() == 0) throw new DeviceCannotBeCreatedException("shelf positions can't be 0");
+        if(device.getPartNumber().isBlank()) throw new DeviceCannotBeCreatedException("please give part number");
         logger.info("Device Service: Device creation requested and forwarded to Device Repository");
         return deviceRepository.createDevice(device);
     }

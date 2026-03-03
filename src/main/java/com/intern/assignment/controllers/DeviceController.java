@@ -1,6 +1,7 @@
 package com.intern.assignment.controllers;
 
 import com.intern.assignment.entities.Device;
+import com.intern.assignment.exceptions.DeviceCannotBeCreatedException;
 import com.intern.assignment.exceptions.DeviceNotFoundException;
 import com.intern.assignment.services.DeviceService;
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ public class DeviceController {
 
     @PostMapping("/create")
     @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<Map<String,Object>> createDevice(@RequestBody Device device) {
+    public ResponseEntity<Map<String,Object>> createDevice(@RequestBody Device device) throws DeviceCannotBeCreatedException {
         logger.info("Device Controller: Device Creation Requested");
         return new ResponseEntity<>(deviceService.createDevice(device), HttpStatus.OK);
     }
