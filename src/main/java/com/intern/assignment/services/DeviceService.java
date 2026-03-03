@@ -1,6 +1,7 @@
 package com.intern.assignment.services;
 
 import com.intern.assignment.entities.Device;
+import com.intern.assignment.exceptions.DeviceNotFoundException;
 import com.intern.assignment.repositories.DeviceRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,17 +23,17 @@ public class DeviceService {
         return deviceRepository.createDevice(device);
     }
 
-    public List<Map<String,Object>> searchDevices(String id, String deviceName, String buildingName, String partNumber, String deviceType, int numberOfShelfPositions) {
+    public List<Map<String,Object>> searchDevices(String id, String deviceName, String buildingName, String partNumber, String deviceType, int numberOfShelfPositions) throws DeviceNotFoundException {
         logger.info("Device Service: Search Devices function called and passed to repository");
         return deviceRepository.searchDevices(id, buildingName, deviceName, partNumber, deviceType, numberOfShelfPositions);
     }
 
-    public Device updateDevice(String id, String deviceName, String buildingName, String partNumber, String deviceType, int numberOfShelfPositions) {
+    public Device updateDevice(String id, String deviceName, String buildingName, String partNumber, String deviceType, int numberOfShelfPositions) throws DeviceNotFoundException {
         logger.info("Device Service: Update Devices function called and passed to repository");
         return deviceRepository.updateDevice(id, buildingName, deviceName, partNumber, deviceType, numberOfShelfPositions);
     }
 
-    public boolean deleteDevice(String deviceId) {
+    public boolean deleteDevice(String deviceId) throws DeviceNotFoundException {
         logger.info("Device Service: Delete device function called and passed to repository");
         return deviceRepository.deleteDevice(deviceId);
     }

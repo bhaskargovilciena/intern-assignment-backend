@@ -1,6 +1,7 @@
 package com.intern.assignment.controllers;
 
 import com.intern.assignment.entities.Device;
+import com.intern.assignment.exceptions.DeviceNotFoundException;
 import com.intern.assignment.services.DeviceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ public class DeviceController {
             @RequestParam(value = "buildingName", required = false) String buildingName,
             @RequestParam(value = "partNumber", required = false) String partNumber,
             @RequestParam(value = "numberOfShelfPositions", defaultValue = "0") int numberOfShelfPositions
-    ) {
+    ) throws DeviceNotFoundException {
         logger.info("Device Controller: Search Device function called");
         return new ResponseEntity<>(deviceService.searchDevices(id, deviceName, buildingName, partNumber, deviceType, numberOfShelfPositions), HttpStatus.OK);
     }
@@ -53,14 +54,14 @@ public class DeviceController {
             @RequestParam(value = "buildingName", required = false) String buildingName,
             @RequestParam(value = "partNumber", required = false) String partNumber,
             @RequestParam(value = "numberOfShelfPositions", defaultValue = "0") int numberOfShelfPositions
-    ) {
+    ) throws DeviceNotFoundException {
         logger.info("Device Controller: Update Device function called");
         return new ResponseEntity<>(deviceService.updateDevice(id, deviceName, buildingName, partNumber, deviceType, numberOfShelfPositions), HttpStatus.OK);
     }
 
     @DeleteMapping("/delete")
     @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<Boolean> deleteDevice(@RequestParam(value = "id") String deviceId) {
+    public ResponseEntity<Boolean> deleteDevice(@RequestParam(value = "id") String deviceId) throws DeviceNotFoundException {
         return new ResponseEntity<>(deviceService.deleteDevice(deviceId), HttpStatus.OK);
     }
 }

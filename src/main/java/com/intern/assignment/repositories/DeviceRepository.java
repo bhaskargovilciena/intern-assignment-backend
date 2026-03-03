@@ -2,6 +2,7 @@ package com.intern.assignment.repositories;
 
 import com.intern.assignment.config.DatabaseConnection;
 import com.intern.assignment.entities.Device;
+import com.intern.assignment.exceptions.DeviceNotFoundException;
 import com.intern.assignment.services.ShelfPositionService;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Record;
@@ -62,12 +63,12 @@ public class DeviceRepository {
         return result;
     }
 
-    public List<Map<String,Object>> searchDevices(String id, String buildingName, String deviceName, String partNumber, String deviceType, int numberOfShelfPositions) {
+    public List<Map<String,Object>> searchDevices(String id, String buildingName, String deviceName, String partNumber, String deviceType, int numberOfShelfPositions) throws DeviceNotFoundException {
         String query = "MATCH (device:Device) WHERE device.isDeleted=false ";
         Map<String, Object> params = new HashMap<>();
 
         if(id != null) {
-            query += "AND elementId(device) = $id";
+            query += "AND elementId(device) = $id ";
             params.put("id", id);
         }
         if(buildingName != null) {
@@ -113,10 +114,17 @@ public class DeviceRepository {
         });
         logger.info("Device Repository: Search devices function accessed with query: {}", query);
 
+        if(devices.isEmpty()) throw new DeviceNotFoundException("no devices found");
+
         return devices;
     }
 
-    public Device updateDevice(String id, String buildingName, String deviceName, String partNumber, String deviceType, int numberOfShelfPositions) {
+    private void getDeviceById(String deviceId) throws DeviceNotFoundException {
+        searchDevices(deviceId, null, null, null, null, 0);
+    }
+
+    public Device updateDevice(String id, String buildingName, String deviceName, String partNumber, String deviceType, int numberOfShelfPositions) throws DeviceNotFoundException {
+        getDeviceById(id);
         StringBuilder queryBuilder = new StringBuilder("MATCH (device:Device) WHERE elementId(device) = $id AND device.isDeleted=false SET ");
         Map<String, Object> params = new HashMap<>();
         params.put("id", id);
@@ -165,7 +173,8 @@ public class DeviceRepository {
         return device;
     }
 
-    public boolean deleteDevice(String deviceId) {
+    public boolean deleteDevice(String deviceId) throws DeviceNotFoundException {
+        getDeviceById(deviceId);
         String query = """
                 MATCH (device:Device) WHERE elementId(device) = $id
                 SET device.isDeleted = true
