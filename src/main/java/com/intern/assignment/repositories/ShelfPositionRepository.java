@@ -4,6 +4,7 @@ import com.intern.assignment.config.DatabaseConnection;
 import com.intern.assignment.entities.Shelf;
 import com.intern.assignment.entities.ShelfPosition;
 import com.intern.assignment.exceptions.DeviceNotFoundException;
+import com.intern.assignment.exceptions.ShelfPositionCannotBeCreatedException;
 import com.intern.assignment.exceptions.ShelfPositionNotFoundException;
 import com.intern.assignment.services.ShelfService;
 import org.neo4j.driver.Driver;
@@ -31,7 +32,12 @@ public class ShelfPositionRepository {
         this.shelfService = shelfService;
     }
 
-    public List<ShelfPosition> createShelfPosition(String deviceId, int numberOfShelfPositions) {
+    public List<ShelfPosition> createShelfPosition(String deviceId, int numberOfShelfPositions) throws ShelfPositionCannotBeCreatedException {
+        try {
+            getDeviceById(deviceId);
+        } catch (DeviceNotFoundException e) {
+            throw new ShelfPositionCannotBeCreatedException(e.getMessage());
+        }
         String query = """
                 MATCH (device:Device) WHERE elementId(device) = $id AND device.isDeleted = false
                 WITH device, range(1, $numberOfShelfPositions) AS positions

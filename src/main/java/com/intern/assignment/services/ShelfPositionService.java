@@ -2,6 +2,7 @@ package com.intern.assignment.services;
 
 import com.intern.assignment.entities.ShelfPosition;
 import com.intern.assignment.exceptions.DeviceNotFoundException;
+import com.intern.assignment.exceptions.ShelfPositionCannotBeCreatedException;
 import com.intern.assignment.exceptions.ShelfPositionNotFoundException;
 import com.intern.assignment.repositories.ShelfPositionRepository;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ public class ShelfPositionService {
         this.shelfPositionRepository = shelfPositionRepository;
     }
 
-    public List<ShelfPosition> createShelfPositions(String deviceId, int numberOfShelfPositions) {
+    public List<ShelfPosition> createShelfPositions(String deviceId, int numberOfShelfPositions) throws ShelfPositionCannotBeCreatedException {
         logger.info("Shelf Position Service: Shelf Positions creation request for device ID: {} accepted and forwarded to repository", deviceId);
         return shelfPositionRepository.createShelfPosition(deviceId, numberOfShelfPositions);
     }

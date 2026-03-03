@@ -2,7 +2,9 @@ package com.intern.assignment.repositories;
 
 import com.intern.assignment.config.DatabaseConnection;
 import com.intern.assignment.entities.Device;
+import com.intern.assignment.entities.ShelfPosition;
 import com.intern.assignment.exceptions.DeviceNotFoundException;
+import com.intern.assignment.exceptions.ShelfPositionCannotBeCreatedException;
 import com.intern.assignment.services.ShelfPositionService;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Record;
@@ -58,8 +60,13 @@ public class DeviceRepository {
         device.setIsDeleted(record.get("isDeleted").asBoolean()); // setting the isDeleted property from the device
         Map<String,Object> result = new HashMap<>();
         result.put("device", device);
-        result.put("shelfPositions", shelfPositionService.createShelfPositions(device.getId(), device.getNumberOfShelfPositions()));
-
+        List<ShelfPosition> shelfPositions;
+        try {
+            shelfPositions = shelfPositionService.createShelfPositions(device.getId(), device.getNumberOfShelfPositions());
+            result.put("shelfPositions", shelfPositions);
+        } catch (ShelfPositionCannotBeCreatedException e) {
+            throw new RuntimeException(e);
+        }
         return result;
     }
 
@@ -149,11 +156,6 @@ public class DeviceRepository {
         if(deviceType != null) {
             queryBuilder.append("device.deviceType = $deviceType, ");
             params.put("deviceType", deviceType);
-        }
-        if(numberOfShelfPositions != 0) {
-            queryBuilder.append("device.numberOfShelfPositions = $numberOfShelfPositions, ");
-            params.put("numberOfShelfPositions", numberOfShelfPositions);
-            shelfPositionService.createShelfPositions(id, numberOfShelfPositions);
         }
 
         queryBuilder.setLength(queryBuilder.length() - 2);
