@@ -1,6 +1,7 @@
 package com.intern.assignment.controllers;
 
 import com.intern.assignment.entities.Shelf;
+import com.intern.assignment.exceptions.ShelfCannotBeCreatedException;
 import com.intern.assignment.exceptions.ShelfNotFoundException;
 import com.intern.assignment.exceptions.ShelfPositionNotFoundException;
 import com.intern.assignment.services.ShelfService;
@@ -25,7 +26,7 @@ public class ShelfController {
 
     @PostMapping("/create")
     @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<Shelf> createShelf(@RequestParam(value = "shelfPositionId") String shelfPositionId, @RequestBody Shelf shelf) {
+    public ResponseEntity<Shelf> createShelf(@RequestParam(value = "shelfPositionId") String shelfPositionId, @RequestBody Shelf shelf) throws ShelfCannotBeCreatedException {
         logger.info("Shelf Controller: Shelf creation requested");
         return new ResponseEntity<>(shelfService.createShelf(shelfPositionId, shelf), HttpStatus.OK);
     }

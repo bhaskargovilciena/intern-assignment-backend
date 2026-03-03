@@ -3,6 +3,7 @@ package com.intern.assignment.services;
 import com.intern.assignment.entities.Shelf;
 import com.intern.assignment.exceptions.ShelfNotFoundException;
 import com.intern.assignment.exceptions.ShelfPositionNotFoundException;
+import com.intern.assignment.exceptions.ShelfCannotBeCreatedException;
 import com.intern.assignment.repositories.ShelfRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,9 @@ public class ShelfService {
         this.shelfRepository = shelfRepository;
     }
 
-    public Shelf createShelf(String shelfPositionId, Shelf shelf) {
+    public Shelf createShelf(String shelfPositionId, Shelf shelf) throws ShelfCannotBeCreatedException {
+        if(shelf.getName().isBlank()) throw new ShelfCannotBeCreatedException("shelf name cannot be empty");
+        if(shelf.getPartNumber().isBlank()) throw new ShelfCannotBeCreatedException("shelf part number cannot be blank");
         logger.info("Shelf Service: Shelf creation requested and forwarded to repository");
         return shelfRepository.createShelf(shelfPositionId, shelf);
     }
