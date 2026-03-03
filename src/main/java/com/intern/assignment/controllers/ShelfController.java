@@ -2,6 +2,7 @@ package com.intern.assignment.controllers;
 
 import com.intern.assignment.entities.Shelf;
 import com.intern.assignment.exceptions.ShelfNotFoundException;
+import com.intern.assignment.exceptions.ShelfPositionNotFoundException;
 import com.intern.assignment.services.ShelfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ public class ShelfController {
 
     @GetMapping("/get")
     @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<Shelf> getShelf(@RequestParam (value = "shelfPositionId") String shelfPositionId) {
+    public ResponseEntity<Shelf> getShelf(@RequestParam (value = "shelfPositionId") String shelfPositionId) throws ShelfPositionNotFoundException {
         logger.info("Shelf Controller: Shelf read requested");
         return new ResponseEntity<>(shelfService.getShelf(shelfPositionId), HttpStatus.OK);
     }

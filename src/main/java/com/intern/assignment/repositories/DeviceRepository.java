@@ -106,7 +106,12 @@ public class DeviceRepository {
             device.setNumberOfShelfPositions(node.get("numberOfShelfPositions").asInt());
             device.setId(node.elementId());
             device.setIsDeleted(node.get("isDeleted").asBoolean());
-            List<Map<String,Object>> shelfPositions = shelfPositionService.getShelfPositions(device.getId());
+            List<Map<String,Object>> shelfPositions = null;
+            try {
+                shelfPositions = shelfPositionService.getShelfPositions(device.getId());
+            } catch (DeviceNotFoundException e) {
+                throw new RuntimeException(e);
+            }
             devices.add(Map.of(
               "device", device,
               "shelfPositions", shelfPositions
@@ -119,7 +124,7 @@ public class DeviceRepository {
         return devices;
     }
 
-    private void getDeviceById(String deviceId) throws DeviceNotFoundException {
+    public void getDeviceById(String deviceId) throws DeviceNotFoundException {
         searchDevices(deviceId, null, null, null, null, 0);
     }
 
@@ -184,7 +189,11 @@ public class DeviceRepository {
 
         records.forEach(record -> {
             Node node = record.get("device").asNode();
-            shelfPositionService.deleteAllShelfPositions(node.elementId());
+            try {
+                shelfPositionService.deleteAllShelfPositions(node.elementId());
+            } catch (DeviceNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         });
 
         return true;

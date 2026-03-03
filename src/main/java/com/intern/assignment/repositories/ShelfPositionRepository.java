@@ -3,6 +3,8 @@ package com.intern.assignment.repositories;
 import com.intern.assignment.config.DatabaseConnection;
 import com.intern.assignment.entities.Shelf;
 import com.intern.assignment.entities.ShelfPosition;
+import com.intern.assignment.exceptions.DeviceNotFoundException;
+import com.intern.assignment.exceptions.ShelfPositionNotFoundException;
 import com.intern.assignment.services.ShelfService;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.Record;
@@ -61,7 +63,18 @@ public class ShelfPositionRepository {
                 .toList();
     }
 
-    public List<Map<String,Object>> getShelfPositions(String deviceId) {
+    public void getDeviceById(String deviceId) throws DeviceNotFoundException {
+        String query = """
+                MATCH (device:Device) WHERE elementId(device) = $id
+                RETURN device
+                """;
+        driver.executableQuery(query).withParameters(Map.of("id", deviceId)).execute().records()
+                .stream().findAny()
+                .orElseThrow(() -> new DeviceNotFoundException("device with ID: " + deviceId + " could not be found"));
+    }
+
+    public List<Map<String,Object>> getShelfPositions(String deviceId) throws DeviceNotFoundException {
+        getDeviceById(deviceId);
         String query = """
                 MATCH (device:Device) WHERE elementId(device) = $id AND device.isDeleted = false
                 MATCH (device)-[:HAS]->(shelfPosition:ShelfPosition) WHERE shelfPosition.isDeleted = false AND elementId(shelfPosition) IS NOT NULL
@@ -78,7 +91,13 @@ public class ShelfPositionRepository {
                     shelfPosition.setDeviceId(node.get("deviceId").asString());
                     shelfPosition.setId(node.elementId());
                     shelfPosition.setIsDeleted(node.get("isDeleted").asBoolean());
-                    Shelf shelf = shelfService.getShelf(shelfPosition.getId());
+                    Shelf shelf;
+                    try {
+                        shelf = shelfService.getShelf(shelfPosition.getId());
+                    }
+                    catch (ShelfPositionNotFoundException exception) {
+                        shelf = null;
+                    }
                     Map<String,Object> map = new HashMap<>();
                     map.put("shelfPosition", shelfPosition);
                     if(shelf != null) map.put("shelf", shelf);
@@ -90,7 +109,18 @@ public class ShelfPositionRepository {
         return shelfPositions;
     }
 
-    public void deleteAllShelfPositions(String deviceId) {
+    public void getShelfPositionById(String shelfPositionId) throws ShelfPositionNotFoundException {
+        String query = """
+                MATCH (shelfPosition:ShelfPosition) WHERE elementId(shelfPosition) = $id
+                RETURN shelfPosition
+                """;
+        driver.executableQuery(query).withParameters(Map.of("id", shelfPositionId)).execute().records()
+                .stream().findAny()
+                .orElseThrow(() -> new ShelfPositionNotFoundException("shelfPosition with ID: " + shelfPositionId + " could not be found"));
+    }
+
+    public void deleteAllShelfPositions(String deviceId) throws DeviceNotFoundException {
+        getDeviceById(deviceId);
         String query = """
                 MATCH (device:Device)-[r:HAS]->(shelfPosition:ShelfPosition)
                 WHERE elementId(device) = $id
@@ -102,11 +132,16 @@ public class ShelfPositionRepository {
 
         records.forEach(record -> {
             Node node = record.get("shelfPosition").asNode();
-            shelfService.deleteAllShelves(node.elementId());
+            try {
+                shelfService.deleteAllShelves(node.elementId());
+            } catch (ShelfPositionNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 
-    public Boolean deleteShelfPosition(String shelfPositionId) {
+    public Boolean deleteShelfPosition(String shelfPositionId) throws ShelfPositionNotFoundException {
+        getShelfPositionById(shelfPositionId);
         String query = """
                 MATCH (device:Device)-[:HAS]-(shelfPosition:ShelfPosition) WHERE elementId(shelfPosition) = $id
                 SET shelfPosition.isDeleted = true
@@ -119,7 +154,8 @@ public class ShelfPositionRepository {
         return true;
     }
 
-    public ShelfPosition addShelfPositions(String deviceId) {
+    public ShelfPosition addShelfPositions(String deviceId) throws DeviceNotFoundException {
+        getDeviceById(deviceId);
         String query = """
                 MATCH (device:Device) WHERE elementId(device) = $id AND device.isDeleted = false
                 SET device.numberOfShelfPositions = device.numberOfShelfPositions + 1

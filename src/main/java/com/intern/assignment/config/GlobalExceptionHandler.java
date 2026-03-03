@@ -2,6 +2,7 @@ package com.intern.assignment.config;
 
 import com.intern.assignment.exceptions.DeviceNotFoundException;
 import com.intern.assignment.exceptions.ShelfNotFoundException;
+import com.intern.assignment.exceptions.ShelfPositionNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,7 +14,7 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler({DeviceNotFoundException.class, ShelfNotFoundException.class})
+    @ExceptionHandler({DeviceNotFoundException.class, ShelfNotFoundException.class, ShelfPositionNotFoundException.class})
     public ResponseEntity<Map<String,Object>> handleExceptions(Exception exception) {
         Map<String,Object> response = new HashMap<>();
         response.put("message", exception.getMessage());

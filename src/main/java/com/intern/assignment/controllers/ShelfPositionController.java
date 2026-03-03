@@ -1,6 +1,8 @@
 package com.intern.assignment.controllers;
 
 import com.intern.assignment.entities.ShelfPosition;
+import com.intern.assignment.exceptions.DeviceNotFoundException;
+import com.intern.assignment.exceptions.ShelfPositionNotFoundException;
 import com.intern.assignment.services.ShelfPositionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +24,7 @@ public class ShelfPositionController {
 
     @DeleteMapping("/delete")
     @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<Boolean> deleteShelfPosition(@RequestParam (value = "id") String shelfPositionId) {
+    public ResponseEntity<Boolean> deleteShelfPosition(@RequestParam (value = "id") String shelfPositionId) throws ShelfPositionNotFoundException {
         return new ResponseEntity<>(shelfPositionService.deleteShelf(shelfPositionId), HttpStatus.OK);
     }
 
@@ -31,7 +33,7 @@ public class ShelfPositionController {
     public ResponseEntity<List<ShelfPosition>> createShelfPositions(
             @RequestParam (value = "deviceId") String deviceId,
             @RequestParam (value = "numberOfShelfPositions") int numberOfShelfPositions
-    ) {
+    ) throws DeviceNotFoundException {
         return new ResponseEntity<>(shelfPositionService.addShelfPositions(deviceId, numberOfShelfPositions), HttpStatus.OK);
     }
 }
