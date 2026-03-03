@@ -106,7 +106,7 @@ public class DeviceRepository {
             device.setNumberOfShelfPositions(node.get("numberOfShelfPositions").asInt());
             device.setId(node.elementId());
             device.setIsDeleted(node.get("isDeleted").asBoolean());
-            List<Map<String,Object>> shelfPositions = null;
+            List<Map<String,Object>> shelfPositions;
             try {
                 shelfPositions = shelfPositionService.getShelfPositions(device.getId());
             } catch (DeviceNotFoundException e) {
