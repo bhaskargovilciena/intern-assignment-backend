@@ -2,6 +2,7 @@ package com.intern.assignment.repositories;
 
 import com.intern.assignment.config.DatabaseConnection;
 import com.intern.assignment.entities.Shelf;
+import com.intern.assignment.exceptions.ShelfNotFoundException;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.types.Node;
 import org.slf4j.Logger;
@@ -61,7 +62,18 @@ public class ShelfRepository {
         return shelf;
     }
 
-    public Shelf updateShelf(String shelfId, String name, String partNumber) {
+    public void getShelfById(String shelfId) throws ShelfNotFoundException {
+        String query = """
+                MATCH (shelf:Shelf) WHERE elementId(shelf) = $id
+                RETURN shelf
+                """;
+        driver.executableQuery(query).withParameters(Map.of("id", shelfId)).execute().records()
+                .stream().findAny()
+                .orElseThrow(() -> new ShelfNotFoundException("shelf with ID: " + shelfId + " could not be found"));
+    }
+
+    public Shelf updateShelf(String shelfId, String name, String partNumber) throws ShelfNotFoundException {
+        getShelfById(shelfId);
         StringBuilder query = new StringBuilder("MATCH (shelf:Shelf) WHERE elementId(shelf) = $id AND shelf.isDeleted = false SET ");
         Map<String, Object> params = new HashMap<>();
         params.put("id", shelfId);
@@ -102,7 +114,7 @@ public class ShelfRepository {
         driver.executableQuery(query).withParameters(Map.of("id", shelfPositionId)).execute();
     }
 
-    public Boolean deleteShelf(String shelfId) {
+    public Boolean deleteShelf(String shelfId) throws ShelfNotFoundException {
         String query = """
                 MATCH (:ShelfPosition)-[r:HAS]->(shelf:Shelf) WHERE elementId(shelf) = $shelfId
                 SET shelf.isDeleted = true

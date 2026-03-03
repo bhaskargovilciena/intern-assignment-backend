@@ -1,6 +1,7 @@
 package com.intern.assignment.services;
 
 import com.intern.assignment.entities.Shelf;
+import com.intern.assignment.exceptions.ShelfNotFoundException;
 import com.intern.assignment.repositories.ShelfRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ public class ShelfService {
         return shelfRepository.getShelf(shelfPositionId);
     }
 
-    public Shelf updateShelf(String shelfId, String name, String partNumber) {
+    public Shelf updateShelf(String shelfId, String name, String partNumber) throws ShelfNotFoundException {
         logger.info("Shelf Service: Shelf updated requested and forwarded to repository");
         return shelfRepository.updateShelf(shelfId, name, partNumber);
     }
@@ -37,7 +38,7 @@ public class ShelfService {
         shelfRepository.deleteAllShelves(shelfPositionId);
     }
 
-    public Boolean deleteShelf(String shelfId) {
+    public Boolean deleteShelf(String shelfId) throws ShelfNotFoundException {
         logger.info("Shelf Service: Shelf deletion requested and forwarded to repository for ID: {}", shelfId);
         return shelfRepository.deleteShelf(shelfId);
     }
