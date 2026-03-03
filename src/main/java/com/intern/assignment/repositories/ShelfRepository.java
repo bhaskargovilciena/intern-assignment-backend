@@ -106,7 +106,6 @@ public class ShelfRepository {
         String query = """
                 MATCH (:ShelfPosition)-[r:HAS]->(shelf:Shelf) WHERE elementId(shelf) = $shelfId
                 SET shelf.isDeleted = true
-                DELETE r
                 """;
         driver.executableQuery(query).withParameters(Map.of("shelfId", shelfId)).execute().records();
 
