@@ -1,6 +1,7 @@
 package com.intern.assignment.config;
 
 import com.intern.assignment.exceptions.*;
+import org.neo4j.driver.exceptions.ClientException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,5 +31,15 @@ public class GlobalExceptionHandler {
         response.put("timestamp", LocalDateTime.now());
         response.put("error", "incorrect input");
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({ClientException.class})
+    public ResponseEntity<Map<String,Object>> handleDatabaseExceptions(Exception exception) {
+        Map<String,Object> response = new HashMap<>();
+        response.put("message", exception.getMessage());
+        response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.put("timestamp", LocalDateTime.now());
+        response.put("error", "incorrect input");
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
