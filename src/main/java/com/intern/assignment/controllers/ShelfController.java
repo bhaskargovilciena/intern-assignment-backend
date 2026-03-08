@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/shelf")
 public class ShelfController {
@@ -47,6 +49,13 @@ public class ShelfController {
     public ResponseEntity<Shelf> getShelf(@RequestParam (value = "shelfPositionId") String shelfPositionId) throws ShelfPositionNotFoundException {
         logger.info("Shelf Controller: Shelf read requested");
         return new ResponseEntity<>(shelfService.getShelf(shelfPositionId), HttpStatus.OK);
+    }
+
+    @GetMapping("/get/available")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<List<Shelf>> getAvailableShelves() {
+        logger.info("Shelf Controller: Available shelves requested");
+        return new ResponseEntity<>(shelfService.getAvailableShelves(), HttpStatus.OK);
     }
 
     @PutMapping("/update")

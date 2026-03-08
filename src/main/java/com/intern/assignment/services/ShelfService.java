@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ShelfService {
     private final ShelfRepository shelfRepository;
@@ -53,5 +55,10 @@ public class ShelfService {
     public Boolean deleteShelf(String shelfId) throws ShelfNotFoundException {
         logger.info("Shelf Service: Shelf deletion requested and forwarded to repository for ID: {}", shelfId);
         return shelfRepository.deleteShelf(shelfId);
+    }
+
+    public List<Shelf> getAvailableShelves() {
+        logger.info("Shelf Service: All available shelves requested");
+        return shelfRepository.getAllAvailableShelves();
     }
 }
