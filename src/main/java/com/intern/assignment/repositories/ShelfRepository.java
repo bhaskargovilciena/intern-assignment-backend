@@ -24,7 +24,7 @@ public class ShelfRepository {
 
     public Shelf createShelf(Shelf shelf) {
         String query = """
-                MERGE (shelf:Shelf {
+                CREATE (shelf:Shelf {
                     name: $name,
                     partNumber: $partNumber,
                     isDeleted: false
