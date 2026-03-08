@@ -1,6 +1,7 @@
 package com.intern.assignment.services;
 
 import com.intern.assignment.entities.Shelf;
+import com.intern.assignment.exceptions.ShelfCannotBeLinkedToShelfPosition;
 import com.intern.assignment.exceptions.ShelfNotFoundException;
 import com.intern.assignment.exceptions.ShelfPositionNotFoundException;
 import com.intern.assignment.exceptions.ShelfCannotBeCreatedException;
@@ -20,11 +21,18 @@ public class ShelfService {
         this.shelfRepository = shelfRepository;
     }
 
-    public Shelf createShelf(String shelfPositionId, Shelf shelf) throws ShelfCannotBeCreatedException {
+    public Shelf createShelf(Shelf shelf) throws ShelfCannotBeCreatedException {
         if(shelf.getName().isBlank()) throw new ShelfCannotBeCreatedException("shelf name cannot be empty");
         if(shelf.getPartNumber().isBlank()) throw new ShelfCannotBeCreatedException("shelf part number cannot be blank");
         logger.info("Shelf Service: Shelf creation requested and forwarded to repository");
-        return shelfRepository.createShelf(shelfPositionId, shelf);
+        return shelfRepository.createShelf(shelf);
+    }
+
+    public Shelf linkShelfToShelfPosition(String shelfPositionId, String shelfId) throws ShelfPositionNotFoundException, ShelfNotFoundException, ShelfCannotBeLinkedToShelfPosition {
+        if(shelfPositionId.isBlank()) throw new ShelfPositionNotFoundException("shelf position id can't be null");
+        if(shelfId.isBlank()) throw new ShelfNotFoundException("shelf id can't be null");
+        logger.info("Shelf Service: Shelf with ID: {} to link with shelf position id: {}", shelfId, shelfPositionId);
+        return shelfRepository.linkShelfToShelfPosition(shelfPositionId, shelfId);
     }
 
     public Shelf getShelf(String shelfPositionId) throws ShelfPositionNotFoundException {

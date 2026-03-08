@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler({DeviceCannotBeCreatedException.class, ShelfPositionCannotBeCreatedException.class, ShelfCannotBeCreatedException.class})
+    @ExceptionHandler({DeviceCannotBeCreatedException.class, ShelfPositionCannotBeCreatedException.class, ShelfCannotBeCreatedException.class, ShelfCannotBeLinkedToShelfPosition.class})
     public ResponseEntity<Map<String, Object>> handleBadRequestExceptions(Exception exception) {
         Map<String,Object> response = new HashMap<>();
         response.put("message", exception.getMessage());

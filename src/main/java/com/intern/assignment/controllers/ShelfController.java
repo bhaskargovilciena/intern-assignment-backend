@@ -2,6 +2,7 @@ package com.intern.assignment.controllers;
 
 import com.intern.assignment.entities.Shelf;
 import com.intern.assignment.exceptions.ShelfCannotBeCreatedException;
+import com.intern.assignment.exceptions.ShelfCannotBeLinkedToShelfPosition;
 import com.intern.assignment.exceptions.ShelfNotFoundException;
 import com.intern.assignment.exceptions.ShelfPositionNotFoundException;
 import com.intern.assignment.services.ShelfService;
@@ -26,9 +27,19 @@ public class ShelfController {
 
     @PostMapping("/create")
     @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<Shelf> createShelf(@RequestParam(value = "shelfPositionId") String shelfPositionId, @RequestBody Shelf shelf) throws ShelfCannotBeCreatedException {
+    public ResponseEntity<Shelf> createShelf(@RequestBody Shelf shelf) throws ShelfCannotBeCreatedException {
         logger.info("Shelf Controller: Shelf creation requested");
-        return new ResponseEntity<>(shelfService.createShelf(shelfPositionId, shelf), HttpStatus.OK);
+        return new ResponseEntity<>(shelfService.createShelf(shelf), HttpStatus.OK);
+    }
+
+    @PutMapping("/link")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<Shelf> linkShelfToShelfPosition(
+            @RequestParam(value = "shelfPositionId") String shelfPositionId,
+            @RequestParam(value = "shelfId") String shelfId
+    ) throws ShelfNotFoundException, ShelfPositionNotFoundException, ShelfCannotBeLinkedToShelfPosition {
+        logger.info("Shelf Controller: shelf link with shelf position requested");
+        return new ResponseEntity<>(shelfService.linkShelfToShelfPosition(shelfPositionId, shelfId), HttpStatus.OK);
     }
 
     @GetMapping("/get")
