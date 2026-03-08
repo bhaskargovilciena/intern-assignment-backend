@@ -2,15 +2,19 @@ package com.intern.assignment.repositories;
 
 import com.intern.assignment.config.DatabaseConnection;
 import com.intern.assignment.entities.Shelf;
+import com.intern.assignment.exceptions.ShelfCannotBeLinkedToShelfPosition;
 import com.intern.assignment.exceptions.ShelfNotFoundException;
 import com.intern.assignment.exceptions.ShelfPositionNotFoundException;
 import org.neo4j.driver.Driver;
+import org.neo4j.driver.Value;
 import org.neo4j.driver.types.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Repository
@@ -18,10 +22,9 @@ public class ShelfRepository {
     private static final Driver driver = DatabaseConnection.initialise();
     private static final Logger logger = LoggerFactory.getLogger(ShelfRepository.class);
 
-    public Shelf createShelf(String shelfPositionId, Shelf shelf) {
+    public Shelf createShelf(Shelf shelf) {
         String query = """
-                MATCH (shelfPosition:ShelfPosition) WHERE elementId(shelfPosition) = $id
-                MERGE (shelfPosition)-[:HAS]->(shelf:Shelf {
+                CREATE (shelf:Shelf {
                     name: $name,
                     partNumber: $partNumber,
                     isDeleted: false
@@ -29,7 +32,6 @@ public class ShelfRepository {
                 RETURN shelf
                 """;
         var records = driver.executableQuery(query).withParameters(Map.of(
-                "id", shelfPositionId,
                 "name", shelf.getName(),
                 "partNumber", shelf.getPartNumber()
         )).execute().records();
@@ -40,6 +42,29 @@ public class ShelfRepository {
             shelf.setIsDeleted(node.get("isDeleted").asBoolean());
         });
         logger.info("Shelf Repository: Shelf created with ID {}", shelf.getId());
+        return shelf;
+    }
+
+    public Shelf linkShelfToShelfPosition(String shelfPositionId, String shelfId) throws ShelfCannotBeLinkedToShelfPosition, ShelfPositionNotFoundException, ShelfNotFoundException {
+        getShelfById(shelfId);
+        if(getShelf(shelfPositionId) != null) throw new ShelfCannotBeLinkedToShelfPosition("shelf position already has a shelf");
+        String query = """
+                MATCH (shelfPosition:ShelfPosition) WHERE elementId(shelfPosition) = $shelfPositionId
+                MATCH (shelf:Shelf) WHERE elementId(shelf) = $shelfId
+                MERGE (shelfPosition)-[:HAS]-(shelf)
+                RETURN shelf
+                """;
+        Shelf shelf = new Shelf();
+        driver.executableQuery(query).withParameters(Map.of(
+                "shelfPositionId", shelfPositionId,
+                "shelfId", shelfId
+        )).execute().records().forEach(r -> {
+            Node node = r.get("shelf").asNode();
+            shelf.setIsDeleted(node.get("isDeleted").asBoolean());
+            shelf.setId(node.elementId());
+            shelf.setName(node.get("name").asString());
+            shelf.setPartNumber(node.get("partNumber").asString());
+        });
         return shelf;
     }
 
@@ -137,5 +162,25 @@ public class ShelfRepository {
         driver.executableQuery(query).withParameters(Map.of("shelfId", shelfId)).execute().records();
 
         return true;
+    }
+
+    public List<Shelf> getAllAvailableShelves() {
+        String query = """
+                MATCH (shelf:Shelf {isDeleted : false})
+                WHERE NOT (shelf)<-[:HAS]-(:ShelfPosition)
+                RETURN collect(shelf) as shelves
+                """;
+        List<Shelf> shelves = new ArrayList<>();
+        driver.executableQuery(query).execute().records().stream()
+                .flatMap(record -> record.get("shelves").asList(Value::asNode).stream())
+                .forEach(node -> {
+                    Shelf shelf =  new Shelf();
+                    shelf.setName(node.get("name").asString());
+                    shelf.setId(node.elementId());
+                    shelf.setIsDeleted(node.get("isDeleted").asBoolean());
+                    shelf.setPartNumber(node.get("partNumber").asString());
+                    shelves.add(shelf);
+                });
+        return shelves;
     }
 }
